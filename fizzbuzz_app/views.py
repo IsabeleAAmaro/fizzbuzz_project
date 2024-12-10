@@ -1,14 +1,32 @@
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
 
 
+# Verificação do CRSF desativada para facilitar testes no curl
+@csrf_exempt
+@require_http_methods(["POST"])
 def fizzbuzz_view(request):
-    if request.method == "POST":
-        import json
-        # Extrair o valor de 'n' do corpo da requisição
+    try:
         body = json.loads(request.body)
-        n = body.get("n", 0)
+        if 'n' not in body:
+            return JsonResponse({
+                "error": "O parâmetro 'n' é obrigatório"
+            }, status=400)
 
-        # Gerar a lista FizzBuzz
+        try:
+            n = int(body['n'])
+        except (ValueError, TypeError):
+            return JsonResponse({
+                "error": "O valor de 'n' deve ser um número inteiro válido"
+            }, status=400)
+
+        if n < 0:
+            return JsonResponse({
+                "error": "O valor de 'n' deve ser maior ou igual a zero"
+            }, status=400)
+
         fizzbuzz_list = []
         for i in range(1, n + 1):
             if i % 3 == 0 and i % 5 == 0:
@@ -20,8 +38,16 @@ def fizzbuzz_view(request):
             else:
                 fizzbuzz_list.append(i)
 
-        # Retornar o resultado como JSON
-        return JsonResponse({"resultado": fizzbuzz_list})
+        return JsonResponse({
+            "resultado": fizzbuzz_list
+        })
 
-    # Caso não seja POST, retornar erro 405
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "error": "JSON inválido ou malformado"
+        }, status=400)
+
+    except Exception as e:
+        return JsonResponse({
+            "error": f"Erro interno do servidor: {str(e)}"
+        }, status=500)
