@@ -80,7 +80,8 @@ WSGI_APPLICATION = 'fizzbuzz_project.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres:postgres@localhost:5432/mysite',
+        default='postgresql://fizzbuzz_davc_user:zDpVKPM2UTd3ZKLsqURcEojPtBfXBK7J@dpg-ctbqnse8ii6s738k57c0-a.oregon'
+                '-postgres.render.com/fizzbuzz_davc',
         conn_max_age=600
     )
 }
